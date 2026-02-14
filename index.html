@@ -4,6 +4,7 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
   <title>Context-Keyboard</title>
+  <link rel="icon" type="image/png" href="your-logo.png">
   <style>
     body {
       background-color: #000080;
@@ -362,7 +363,7 @@
       <tr>
         <td>
           <div class="title-bar">
-            <span>📝 Context Aware Keyboard AI Keyboard v1.1 BETA</span>
+            <span><img src="your-logo.png" style="width:14px; height:14px; vertical-align:middle; margin-right:4px;"> Context Aware Keyboard AI Keyboard v1.1 BETA</span>
             <div class="title-bar-buttons">
               <span>_</span>
               <span>□</span>
@@ -399,7 +400,7 @@
             <div class="textbox-label">Type your text below:</div>
             <textarea
               id="input"
-              placeholder="Start typing here... (works best in IE 6)"
+              placeholder="Start typing here..."
               autofocus
               spellcheck="false"
             ></textarea>
@@ -412,6 +413,11 @@
               </span>
               <span class="statusbar-panel" id="word-count">0 words</span>
               <button class="clear-btn" onclick="clearAll()">Clear</button>
+              
+            </div>
+            <div class="hint-text">
+            <b>TIP:</b> Click any button above to add that word! Press TAB for best match.
+              It uses last 5 words of sentence to generate context and pad if sentence is shorter than 5 words.
             </div>
 
 
