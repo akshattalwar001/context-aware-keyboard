@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>WordFlow -- AI Keyboard BETA v2.1</title>
+  <title>Context-Keyboard</title>
   <style>
     body {
       background-color: #000080;
@@ -13,6 +13,10 @@
       margin: 0;
       padding: 10px;
       text-align: center;
+      min-height: 100vh;
+      display: flex;
+      align-items: center;
+      justify-content: center;
     }
 
     marquee {
@@ -50,11 +54,53 @@
 
     .main-table {
       width: 640px;
+      max-width: 100%;
       margin: 0 auto;
       background: #c0c0c0;
       border: 4px outset #ffffff;
       padding: 0;
       color: #000000;
+    }
+
+    @media (max-width: 680px) {
+      body { padding: 8px; }
+
+      .main-table {
+        width: 100%;
+        border-width: 3px;
+      }
+
+      .window-content {
+        padding: 8px;
+      }
+
+      .pred-btn {
+        font-size: 11px;
+        padding: 8px 2px;
+      }
+
+      .pred-word {
+        font-size: 12px;
+      }
+
+      .pred-label {
+        font-size: 8px;
+      }
+
+      textarea {
+        font-size: 16px; /* prevents iOS auto-zoom */
+        height: 140px;
+      }
+
+      .statusbar {
+        font-size: 10px;
+        flex-wrap: wrap;
+        gap: 2px;
+      }
+
+      .title-bar {
+        font-size: 11px;
+      }
     }
 
     .title-bar {
@@ -213,6 +259,7 @@
     /* OUTER PAGE stuff */
     .page-wrapper {
       max-width: 700px;
+      width: 100%;
       margin: 0 auto;
     }
 
@@ -315,7 +362,7 @@
       <tr>
         <td>
           <div class="title-bar">
-            <span>📝 WordFlow AI Keyboard v2.1 BETA</span>
+            <span>📝 Context Aware Keyboard AI Keyboard v1.1 BETA</span>
             <div class="title-bar-buttons">
               <span>_</span>
               <span>□</span>
