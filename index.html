@@ -3,356 +3,390 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>WordFlow — AI Keyboard</title>
-  <link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800&family=DM+Mono:ital,wght@0,300;0,400;1,300&display=swap" rel="stylesheet"/>
+  <title>WordFlow -- AI Keyboard BETA v2.1</title>
   <style>
-    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
-
-    :root {
-      --bg: #0a0a0f;
-      --surface: #111118;
-      --surface2: #1a1a26;
-      --border: #2a2a3d;
-      --accent: #7c6dfa;
-      --accent2: #fa6d9a;
-      --accent3: #6dfacc;
-      --text: #e8e8f0;
-      --text-dim: #6b6b8a;
-      --glow: rgba(124, 109, 250, 0.3);
+    body {
+      background-color: #000080;
+      background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='20' height='20'%3E%3Crect width='10' height='10' fill='%23000090'/%3E%3Crect x='10' y='10' width='10' height='10' fill='%23000090'/%3E%3C/svg%3E");
+      color: #ffff00;
+      font-family: "Comic Sans MS", "Comic Sans", cursive;
+      margin: 0;
+      padding: 10px;
+      text-align: center;
     }
 
-    body {
-      background: var(--bg);
-      color: var(--text);
-      font-family: 'Syne', sans-serif;
-      min-height: 100vh;
+    marquee {
+      background: #ff0000;
+      color: #ffffff;
+      font-size: 14px;
+      font-weight: bold;
+      padding: 4px;
+      border: 3px solid yellow;
+    }
+
+    h1 {
+      font-size: 42px;
+      color: #00ffff;
+      text-shadow: 3px 3px #ff00ff, 6px 6px #ff0000;
+      font-family: "Impact", "Arial Black", sans-serif;
+      letter-spacing: 4px;
+      margin: 10px 0 0 0;
+    }
+
+    h2 {
+      font-size: 13px;
+      color: #ff00ff;
+      font-family: "Comic Sans MS", cursive;
+      margin: 2px 0 10px 0;
+      font-weight: normal;
+    }
+
+    .blink {
+      animation: blinker 0.7s step-start infinite;
+      color: #ff0000;
+      font-weight: bold;
+    }
+    @keyframes blinker { 50% { opacity: 0; } }
+
+    .main-table {
+      width: 640px;
+      margin: 0 auto;
+      background: #c0c0c0;
+      border: 4px outset #ffffff;
+      padding: 0;
+      color: #000000;
+    }
+
+    .title-bar {
+      background: linear-gradient(to right, #000080, #1084d0);
+      color: white;
+      font-family: "Arial", sans-serif;
+      font-size: 12px;
+      font-weight: bold;
+      padding: 3px 6px;
+      text-align: left;
       display: flex;
-      flex-direction: column;
+      justify-content: space-between;
+      align-items: center;
+    }
+
+    .title-bar-buttons {
+      display: flex;
+      gap: 2px;
+    }
+
+    .title-bar-buttons span {
+      background: #c0c0c0;
+      color: #000;
+      border: 2px outset #ffffff;
+      font-size: 10px;
+      width: 16px;
+      height: 14px;
+      display: inline-flex;
       align-items: center;
       justify-content: center;
-      padding: 2rem;
-      overflow: hidden;
+      cursor: pointer;
+      font-family: Arial, sans-serif;
     }
 
-    /* Animated background */
-    body::before {
-      content: '';
-      position: fixed;
-      inset: 0;
-      background:
-        radial-gradient(ellipse 60% 50% at 20% 20%, rgba(124,109,250,0.08) 0%, transparent 60%),
-        radial-gradient(ellipse 50% 40% at 80% 80%, rgba(250,109,154,0.06) 0%, transparent 60%),
-        radial-gradient(ellipse 40% 60% at 60% 10%, rgba(109,250,204,0.05) 0%, transparent 60%);
-      pointer-events: none;
-      z-index: 0;
+    .window-content {
+      padding: 12px;
     }
 
-    .wrapper {
-      position: relative;
-      z-index: 1;
+    .pred-table {
       width: 100%;
-      max-width: 720px;
-      display: flex;
-      flex-direction: column;
-      gap: 2rem;
+      border-collapse: separate;
+      border-spacing: 4px;
+      margin-bottom: 8px;
     }
 
-    /* Header */
-    .header {
-      text-align: center;
-      animation: fadeDown 0.6s ease both;
-    }
-
-    .header h1 {
-      font-size: clamp(2rem, 5vw, 3rem);
-      font-weight: 800;
-      letter-spacing: -0.03em;
-      background: linear-gradient(135deg, var(--accent) 0%, var(--accent2) 50%, var(--accent3) 100%);
-      -webkit-background-clip: text;
-      -webkit-text-fill-color: transparent;
-      background-clip: text;
-    }
-
-    .header p {
-      font-family: 'DM Mono', monospace;
-      font-size: 0.75rem;
-      color: var(--text-dim);
-      margin-top: 0.4rem;
-      letter-spacing: 0.1em;
-      text-transform: uppercase;
-    }
-
-    /* Prediction bar */
-    .predictions {
-      display: grid;
-      grid-template-columns: 1fr 1.2fr 1fr;
-      gap: 0.75rem;
-      animation: fadeDown 0.6s 0.1s ease both;
+    .pred-table td {
+      width: 33%;
     }
 
     .pred-btn {
-      background: var(--surface);
-      border: 1px solid var(--border);
-      border-radius: 14px;
-      padding: 0.9rem 1rem;
-      color: var(--text-dim);
-      font-family: 'Syne', sans-serif;
-      font-size: 0.9rem;
-      font-weight: 600;
+      width: 100%;
+      padding: 6px 4px;
+      font-family: "Arial", sans-serif;
+      font-size: 12px;
       cursor: pointer;
-      transition: all 0.2s ease;
+      border: 2px outset #ffffff;
+      background: #c0c0c0;
+      color: #000000;
       text-align: center;
-      letter-spacing: 0.02em;
-      position: relative;
-      overflow: hidden;
     }
 
-    .pred-btn::before {
-      content: '';
-      position: absolute;
-      inset: 0;
-      opacity: 0;
-      transition: opacity 0.2s ease;
-      border-radius: inherit;
-    }
-
-    .pred-btn:hover {
-      transform: translateY(-2px);
-      color: var(--text);
-      border-color: var(--accent);
+    .pred-btn:active {
+      border-style: inset;
     }
 
     .pred-btn.best {
-      background: var(--surface2);
-      border-color: var(--accent);
-      color: var(--text);
-      font-size: 1rem;
-      box-shadow: 0 0 20px var(--glow), inset 0 1px 0 rgba(124,109,250,0.2);
+      background: #000080;
+      color: #ffffff;
+      font-weight: bold;
+      border: 2px outset #8888ff;
     }
 
-    .pred-btn.best::before {
-      background: linear-gradient(135deg, rgba(124,109,250,0.1), rgba(250,109,154,0.05));
-      opacity: 1;
-    }
-
-    .pred-btn.left { border-color: rgba(109,250,204,0.2); }
-    .pred-btn.right { border-color: rgba(250,109,154,0.2); }
-
-    .pred-btn.left:hover { border-color: var(--accent3); box-shadow: 0 0 15px rgba(109,250,204,0.15); }
-    .pred-btn.right:hover { border-color: var(--accent2); box-shadow: 0 0 15px rgba(250,109,154,0.15); }
-
-    .pred-btn.best:hover {
-      transform: translateY(-3px);
-      box-shadow: 0 0 30px var(--glow);
-    }
-
-    .pred-btn.loading {
-      pointer-events: none;
-      opacity: 0.5;
+    .pred-btn.best:active {
+      border-style: inset;
     }
 
     .pred-label {
       display: block;
-      font-size: 0.6rem;
-      font-family: 'DM Mono', monospace;
-      letter-spacing: 0.12em;
-      text-transform: uppercase;
-      margin-bottom: 0.3rem;
-      opacity: 0.5;
+      font-size: 9px;
+      color: #888;
+      font-family: Arial;
+    }
+
+    .pred-btn.best .pred-label {
+      color: #aaaaff;
     }
 
     .pred-word {
       display: block;
-      min-height: 1.2em;
-      transition: all 0.15s ease;
+      min-height: 1.1em;
+      font-size: 13px;
+      font-weight: bold;
     }
 
-    /* Typing area */
-    .typing-area {
-      position: relative;
-      animation: fadeUp 0.6s 0.2s ease both;
+    .textbox-label {
+      text-align: left;
+      font-family: Arial;
+      font-size: 12px;
+      font-weight: bold;
+      color: #000080;
+      margin-bottom: 2px;
     }
 
-    .typing-area textarea {
+    textarea {
       width: 100%;
-      background: var(--surface);
-      border: 1px solid var(--border);
-      border-radius: 18px;
-      padding: 1.4rem 1.6rem;
-      color: var(--text);
-      font-family: 'DM Mono', monospace;
-      font-size: 1.05rem;
-      line-height: 1.7;
-      resize: none;
-      outline: none;
-      transition: border-color 0.2s ease, box-shadow 0.2s ease;
-      min-height: 160px;
+      height: 120px;
+      font-family: "Courier New", Courier, monospace;
+      font-size: 12px;
+      border: 2px inset #888888;
+      background: #ffffff;
+      color: #000000;
+      resize: vertical;
+      padding: 4px;
+      box-sizing: border-box;
     }
 
-    .typing-area textarea::placeholder {
-      color: var(--text-dim);
-      font-style: italic;
-    }
-
-    .typing-area textarea:focus {
-      border-color: var(--accent);
-      box-shadow: 0 0 0 3px rgba(124,109,250,0.12), 0 0 30px rgba(124,109,250,0.08);
-    }
-
-    /* Status bar */
-    .status-bar {
+    .statusbar {
+      background: #c0c0c0;
+      border: 1px inset #888888;
+      font-family: Arial;
+      font-size: 11px;
+      color: #000000;
       display: flex;
-      align-items: center;
       justify-content: space-between;
-      padding: 0 0.2rem;
-      animation: fadeUp 0.6s 0.3s ease both;
+      padding: 2px 6px;
+      margin-top: 6px;
     }
 
-    .status-indicator {
-      display: flex;
-      align-items: center;
-      gap: 0.5rem;
-      font-family: 'DM Mono', monospace;
-      font-size: 0.7rem;
-      color: var(--text-dim);
-      letter-spacing: 0.05em;
+    .statusbar-panel {
+      border: 1px inset #888;
+      padding: 0 6px;
     }
 
-    .dot {
-      width: 6px;
-      height: 6px;
-      border-radius: 50%;
-      background: var(--accent3);
-      box-shadow: 0 0 6px var(--accent3);
-      animation: pulse 2s ease infinite;
-    }
-
-    .dot.loading {
-      background: var(--accent2);
-      box-shadow: 0 0 6px var(--accent2);
-      animation: pulse 0.6s ease infinite;
-    }
-
-    .word-count {
-      font-family: 'DM Mono', monospace;
-      font-size: 0.7rem;
-      color: var(--text-dim);
-      letter-spacing: 0.05em;
-    }
-
-    /* Clear button */
     .clear-btn {
-      background: transparent;
-      border: 1px solid var(--border);
-      border-radius: 8px;
-      padding: 0.35rem 0.8rem;
-      color: var(--text-dim);
-      font-family: 'DM Mono', monospace;
-      font-size: 0.7rem;
+      font-family: Arial;
+      font-size: 11px;
+      padding: 2px 10px;
+      border: 2px outset #ffffff;
+      background: #c0c0c0;
       cursor: pointer;
-      letter-spacing: 0.05em;
-      transition: all 0.2s ease;
+      color: #000;
     }
 
-    .clear-btn:hover {
-      color: var(--accent2);
-      border-color: var(--accent2);
+    .clear-btn:active {
+      border-style: inset;
     }
 
-    /* Hint */
-    .hint {
-      text-align: center;
-      font-family: 'DM Mono', monospace;
-      font-size: 0.68rem;
-      color: var(--text-dim);
-      letter-spacing: 0.08em;
-      animation: fadeUp 0.6s 0.4s ease both;
-      opacity: 0.6;
+    .hint-text {
+      font-family: Arial;
+      font-size: 10px;
+      color: #444444;
+      margin-top: 4px;
+      text-align: left;
     }
 
-    /* Animations */
-    @keyframes fadeDown {
-      from { opacity: 0; transform: translateY(-16px); }
-      to { opacity: 1; transform: translateY(0); }
+    /* OUTER PAGE stuff */
+    .page-wrapper {
+      max-width: 700px;
+      margin: 0 auto;
     }
 
-    @keyframes fadeUp {
-      from { opacity: 0; transform: translateY(16px); }
-      to { opacity: 1; transform: translateY(0); }
+    .under-construction {
+      margin: 8px auto;
+      font-size: 11px;
+      color: #ffff00;
+      font-family: Arial;
     }
 
-    @keyframes pulse {
-      0%, 100% { opacity: 1; transform: scale(1); }
-      50% { opacity: 0.5; transform: scale(0.85); }
+    .star-divider {
+      color: #ffff00;
+      font-size: 18px;
+      letter-spacing: 6px;
+      margin: 6px 0;
     }
 
-    @keyframes wordPop {
-      0% { transform: scale(0.92); opacity: 0.4; }
-      60% { transform: scale(1.04); }
-      100% { transform: scale(1); opacity: 1; }
+    .side-gifs {
+      display: flex;
+      justify-content: center;
+      gap: 20px;
+      align-items: center;
+      margin: 6px 0;
     }
 
-    .word-pop {
-      animation: wordPop 0.2s ease both;
+    /* Fake spinning star GIF using CSS */
+    .spinner {
+      width: 32px;
+      height: 32px;
+      background: radial-gradient(circle, #ffff00 30%, transparent 70%),
+                  conic-gradient(#ff0000, #ffff00, #00ff00, #00ffff, #ff00ff, #ff0000);
+      border-radius: 50%;
+      animation: spin 1s linear infinite;
+      border: 2px solid #ffffff;
+    }
+
+    @keyframes spin { to { transform: rotate(360deg); } }
+
+    .explosion {
+      width: 30px;
+      height: 30px;
+      font-size: 26px;
+      line-height: 30px;
+      animation: explode 0.4s ease-in-out infinite alternate;
+    }
+    @keyframes explode {
+      from { transform: scale(1); }
+      to { transform: scale(1.3) rotate(20deg); }
+    }
+
+    .hit-counter {
+      background: #000000;
+      color: #00ff00;
+      font-family: "Courier New", monospace;
+      font-size: 13px;
+      display: inline-block;
+      padding: 2px 8px;
+      border: 2px inset #00ff00;
+      letter-spacing: 3px;
+      margin-top: 4px;
+    }
+
+    .footer-text {
+      color: #aaaaff;
+      font-size: 10px;
+      font-family: Arial;
+      margin-top: 8px;
+    }
+
+    .email-link {
+      color: #ffff00;
+    }
+
+    .wordflow-logo-badge {
+      background: #ff6600;
+      color: #ffffff;
+      font-family: Impact, sans-serif;
+      font-size: 10px;
+      padding: 1px 5px;
+      border: 1px solid #ffffff;
+      letter-spacing: 1px;
+      display: inline-block;
+      vertical-align: middle;
+      margin-left: 4px;
+    }
+
+    .ie-badge {
+      font-size: 9px;
+      color: #ffff88;
+      font-family: Arial;
+      margin-top: 3px;
     }
   </style>
 </head>
 <body>
-  <div class="wrapper">
+  <div class="page-wrapper">
 
-    <div class="header">
-      <h1>WordFlow</h1>
-      <p>AI-powered next word prediction</p>
-    </div>
+    <!-- Main Window -->
+    <table class="main-table" cellpadding="0" cellspacing="0">
+      <tr>
+        <td>
+          <div class="title-bar">
+            <span>📝 WordFlow AI Keyboard v2.1 BETA</span>
+            <div class="title-bar-buttons">
+              <span>_</span>
+              <span>□</span>
+              <span>✕</span>
+            </div>
+          </div>
+          <div class="window-content">
 
-    <div class="predictions">
-      <button class="pred-btn left" onclick="appendWord(0)">
-        <span class="pred-label">suggestion</span>
-        <span class="pred-word" id="pred-0">—</span>
-      </button>
-      <button class="pred-btn best" onclick="appendWord(1)">
-        <span class="pred-label">best match</span>
-        <span class="pred-word" id="pred-1">—</span>
-      </button>
-      <button class="pred-btn right" onclick="appendWord(2)">
-        <span class="pred-label">suggestion</span>
-        <span class="pred-word" id="pred-2">—</span>
-      </button>
-    </div>
+            <!-- Predictions -->
+            <table class="pred-table">
+              <tr>
+                <td>
+                  <button class="pred-btn left" onclick="appendWord(0)">
+                    <span class="pred-label">suggestion</span>
+                    <span class="pred-word" id="pred-0">---</span>
+                  </button>
+                </td>
+                <td>
+                  <button class="pred-btn best" onclick="appendWord(1)">
+                    <span class="pred-label">BEST MATCH</span>
+                    <span class="pred-word" id="pred-1">---</span>
+                  </button>
+                </td>
+                <td>
+                  <button class="pred-btn right" onclick="appendWord(2)">
+                    <span class="pred-label">suggestion</span>
+                    <span class="pred-word" id="pred-2">---</span>
+                  </button>
+                </td>
+              </tr>
+            </table>
 
-    <div class="typing-area">
-      <textarea
-        id="input"
-        placeholder="Start typing here…"
-        autofocus
-        spellcheck="false"
-      ></textarea>
-    </div>
+            <!-- Textarea -->
+            <div class="textbox-label">Type your text below:</div>
+            <textarea
+              id="input"
+              placeholder="Start typing here... (works best in IE 6)"
+              autofocus
+              spellcheck="false"
+            ></textarea>
 
-    <div class="status-bar">
-      <div class="status-indicator">
-        <div class="dot" id="dot"></div>
-        <span id="status-text">ready</span>
-      </div>
-      <span class="word-count" id="word-count">0 words</span>
-      <button class="clear-btn" onclick="clearAll()">clear</button>
-    </div>
+            <!-- Status bar -->
+            <div class="statusbar">
+              <span class="statusbar-panel">
+                <span id="dot-emoji" style="font-size:10px;">🟢</span>
+                <span id="status-text" style="font-size:11px;"> ready</span>
+              </span>
+              <span class="statusbar-panel" id="word-count">0 words</span>
+              <button class="clear-btn" onclick="clearAll()">Clear</button>
+            </div>
 
-    <p class="hint">click any prediction to append it · tab for best match</p>
+
+
+          </div>
+        </td>
+      </tr>
+    </table>
+
+
 
   </div>
 
   <script>
     const textarea = document.getElementById('input');
-    const dot = document.getElementById('dot');
     const statusText = document.getElementById('status-text');
     const wordCount = document.getElementById('word-count');
+    const dotEmoji = document.getElementById('dot-emoji');
 
     let debounceTimer = null;
-    let currentPredictions = ['—', '—', '—'];
 
-    // Debounced prediction on input
-    textarea.addEventListener('input', () => {
+textarea.addEventListener('input', () => {
       const text = textarea.value;
       const words = text.trim().split(/\s+/).filter(Boolean);
       wordCount.textContent = `${words.length} word${words.length !== 1 ? 's' : ''}`;
@@ -364,7 +398,6 @@
       }, 250);
     });
 
-    // Tab key appends best prediction
     textarea.addEventListener('keydown', (e) => {
       if (e.key === 'Tab') {
         e.preventDefault();
@@ -381,50 +414,42 @@
           body: JSON.stringify({ text })
         });
         const data = await res.json();
-        currentPredictions = data.predictions;
         updateUI(data.predictions);
       } catch (err) {
-        statusText.textContent = 'error';
+        statusText.textContent = ' ERROR!! plz refresh';
+        dotEmoji.textContent = '🔴';
       } finally {
         setLoading(false);
       }
     }
 
     function updateUI(predictions) {
-      // Order: left=0, best=1, right=2
-      const order = [0, 1, 2];
-      order.forEach((predIdx, btnIdx) => {
-        const el = document.getElementById(`pred-${btnIdx}`);
-        const word = predictions[predIdx] || '—';
-        if (el.textContent !== word) {
-          el.textContent = word;
-          el.classList.remove('word-pop');
-          void el.offsetWidth; // reflow
-          el.classList.add('word-pop');
-        }
+      [0, 1, 2].forEach(i => {
+        const el = document.getElementById(`pred-${i}`);
+        el.textContent = predictions[i] || '---';
       });
-      statusText.textContent = 'predicted';
+      statusText.textContent = ' predicted!!';
+      dotEmoji.textContent = '🟢';
     }
 
     function appendWord(btnIndex) {
       const word = document.getElementById(`pred-${btnIndex}`).textContent;
-      if (!word || word === '—') return;
+      if (!word || word === '---') return;
 
       const val = textarea.value;
       const needsSpace = val.length > 0 && !val.endsWith(' ');
       textarea.value = val + (needsSpace ? ' ' : '') + word + ' ';
       textarea.dispatchEvent(new Event('input'));
       textarea.focus();
-
-      // Move cursor to end
       textarea.selectionStart = textarea.selectionEnd = textarea.value.length;
     }
 
     function resetPredictions() {
       ['pred-0', 'pred-1', 'pred-2'].forEach(id => {
-        document.getElementById(id).textContent = '—';
+        document.getElementById(id).textContent = '---';
       });
-      statusText.textContent = 'ready';
+      statusText.textContent = ' ready';
+      dotEmoji.textContent = '🟢';
       wordCount.textContent = '0 words';
     }
 
@@ -435,11 +460,8 @@
     }
 
     function setLoading(isLoading) {
-      dot.className = isLoading ? 'dot loading' : 'dot';
-      statusText.textContent = isLoading ? 'thinking…' : 'predicted';
-      document.querySelectorAll('.pred-btn').forEach(btn => {
-        btn.classList.toggle('loading', isLoading);
-      });
+      dotEmoji.textContent = isLoading ? '🟡' : '🟢';
+      statusText.textContent = isLoading ? ' thinking...' : ' predicted!!';
     }
   </script>
 </body>
