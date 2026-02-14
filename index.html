@@ -1,0 +1,446 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>WordFlow — AI Keyboard</title>
+  <link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800&family=DM+Mono:ital,wght@0,300;0,400;1,300&display=swap" rel="stylesheet"/>
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --bg: #0a0a0f;
+      --surface: #111118;
+      --surface2: #1a1a26;
+      --border: #2a2a3d;
+      --accent: #7c6dfa;
+      --accent2: #fa6d9a;
+      --accent3: #6dfacc;
+      --text: #e8e8f0;
+      --text-dim: #6b6b8a;
+      --glow: rgba(124, 109, 250, 0.3);
+    }
+
+    body {
+      background: var(--bg);
+      color: var(--text);
+      font-family: 'Syne', sans-serif;
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      padding: 2rem;
+      overflow: hidden;
+    }
+
+    /* Animated background */
+    body::before {
+      content: '';
+      position: fixed;
+      inset: 0;
+      background:
+        radial-gradient(ellipse 60% 50% at 20% 20%, rgba(124,109,250,0.08) 0%, transparent 60%),
+        radial-gradient(ellipse 50% 40% at 80% 80%, rgba(250,109,154,0.06) 0%, transparent 60%),
+        radial-gradient(ellipse 40% 60% at 60% 10%, rgba(109,250,204,0.05) 0%, transparent 60%);
+      pointer-events: none;
+      z-index: 0;
+    }
+
+    .wrapper {
+      position: relative;
+      z-index: 1;
+      width: 100%;
+      max-width: 720px;
+      display: flex;
+      flex-direction: column;
+      gap: 2rem;
+    }
+
+    /* Header */
+    .header {
+      text-align: center;
+      animation: fadeDown 0.6s ease both;
+    }
+
+    .header h1 {
+      font-size: clamp(2rem, 5vw, 3rem);
+      font-weight: 800;
+      letter-spacing: -0.03em;
+      background: linear-gradient(135deg, var(--accent) 0%, var(--accent2) 50%, var(--accent3) 100%);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+    }
+
+    .header p {
+      font-family: 'DM Mono', monospace;
+      font-size: 0.75rem;
+      color: var(--text-dim);
+      margin-top: 0.4rem;
+      letter-spacing: 0.1em;
+      text-transform: uppercase;
+    }
+
+    /* Prediction bar */
+    .predictions {
+      display: grid;
+      grid-template-columns: 1fr 1.2fr 1fr;
+      gap: 0.75rem;
+      animation: fadeDown 0.6s 0.1s ease both;
+    }
+
+    .pred-btn {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 14px;
+      padding: 0.9rem 1rem;
+      color: var(--text-dim);
+      font-family: 'Syne', sans-serif;
+      font-size: 0.9rem;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all 0.2s ease;
+      text-align: center;
+      letter-spacing: 0.02em;
+      position: relative;
+      overflow: hidden;
+    }
+
+    .pred-btn::before {
+      content: '';
+      position: absolute;
+      inset: 0;
+      opacity: 0;
+      transition: opacity 0.2s ease;
+      border-radius: inherit;
+    }
+
+    .pred-btn:hover {
+      transform: translateY(-2px);
+      color: var(--text);
+      border-color: var(--accent);
+    }
+
+    .pred-btn.best {
+      background: var(--surface2);
+      border-color: var(--accent);
+      color: var(--text);
+      font-size: 1rem;
+      box-shadow: 0 0 20px var(--glow), inset 0 1px 0 rgba(124,109,250,0.2);
+    }
+
+    .pred-btn.best::before {
+      background: linear-gradient(135deg, rgba(124,109,250,0.1), rgba(250,109,154,0.05));
+      opacity: 1;
+    }
+
+    .pred-btn.left { border-color: rgba(109,250,204,0.2); }
+    .pred-btn.right { border-color: rgba(250,109,154,0.2); }
+
+    .pred-btn.left:hover { border-color: var(--accent3); box-shadow: 0 0 15px rgba(109,250,204,0.15); }
+    .pred-btn.right:hover { border-color: var(--accent2); box-shadow: 0 0 15px rgba(250,109,154,0.15); }
+
+    .pred-btn.best:hover {
+      transform: translateY(-3px);
+      box-shadow: 0 0 30px var(--glow);
+    }
+
+    .pred-btn.loading {
+      pointer-events: none;
+      opacity: 0.5;
+    }
+
+    .pred-label {
+      display: block;
+      font-size: 0.6rem;
+      font-family: 'DM Mono', monospace;
+      letter-spacing: 0.12em;
+      text-transform: uppercase;
+      margin-bottom: 0.3rem;
+      opacity: 0.5;
+    }
+
+    .pred-word {
+      display: block;
+      min-height: 1.2em;
+      transition: all 0.15s ease;
+    }
+
+    /* Typing area */
+    .typing-area {
+      position: relative;
+      animation: fadeUp 0.6s 0.2s ease both;
+    }
+
+    .typing-area textarea {
+      width: 100%;
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 18px;
+      padding: 1.4rem 1.6rem;
+      color: var(--text);
+      font-family: 'DM Mono', monospace;
+      font-size: 1.05rem;
+      line-height: 1.7;
+      resize: none;
+      outline: none;
+      transition: border-color 0.2s ease, box-shadow 0.2s ease;
+      min-height: 160px;
+    }
+
+    .typing-area textarea::placeholder {
+      color: var(--text-dim);
+      font-style: italic;
+    }
+
+    .typing-area textarea:focus {
+      border-color: var(--accent);
+      box-shadow: 0 0 0 3px rgba(124,109,250,0.12), 0 0 30px rgba(124,109,250,0.08);
+    }
+
+    /* Status bar */
+    .status-bar {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 0 0.2rem;
+      animation: fadeUp 0.6s 0.3s ease both;
+    }
+
+    .status-indicator {
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+      font-family: 'DM Mono', monospace;
+      font-size: 0.7rem;
+      color: var(--text-dim);
+      letter-spacing: 0.05em;
+    }
+
+    .dot {
+      width: 6px;
+      height: 6px;
+      border-radius: 50%;
+      background: var(--accent3);
+      box-shadow: 0 0 6px var(--accent3);
+      animation: pulse 2s ease infinite;
+    }
+
+    .dot.loading {
+      background: var(--accent2);
+      box-shadow: 0 0 6px var(--accent2);
+      animation: pulse 0.6s ease infinite;
+    }
+
+    .word-count {
+      font-family: 'DM Mono', monospace;
+      font-size: 0.7rem;
+      color: var(--text-dim);
+      letter-spacing: 0.05em;
+    }
+
+    /* Clear button */
+    .clear-btn {
+      background: transparent;
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      padding: 0.35rem 0.8rem;
+      color: var(--text-dim);
+      font-family: 'DM Mono', monospace;
+      font-size: 0.7rem;
+      cursor: pointer;
+      letter-spacing: 0.05em;
+      transition: all 0.2s ease;
+    }
+
+    .clear-btn:hover {
+      color: var(--accent2);
+      border-color: var(--accent2);
+    }
+
+    /* Hint */
+    .hint {
+      text-align: center;
+      font-family: 'DM Mono', monospace;
+      font-size: 0.68rem;
+      color: var(--text-dim);
+      letter-spacing: 0.08em;
+      animation: fadeUp 0.6s 0.4s ease both;
+      opacity: 0.6;
+    }
+
+    /* Animations */
+    @keyframes fadeDown {
+      from { opacity: 0; transform: translateY(-16px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+
+    @keyframes fadeUp {
+      from { opacity: 0; transform: translateY(16px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+
+    @keyframes pulse {
+      0%, 100% { opacity: 1; transform: scale(1); }
+      50% { opacity: 0.5; transform: scale(0.85); }
+    }
+
+    @keyframes wordPop {
+      0% { transform: scale(0.92); opacity: 0.4; }
+      60% { transform: scale(1.04); }
+      100% { transform: scale(1); opacity: 1; }
+    }
+
+    .word-pop {
+      animation: wordPop 0.2s ease both;
+    }
+  </style>
+</head>
+<body>
+  <div class="wrapper">
+
+    <div class="header">
+      <h1>WordFlow</h1>
+      <p>AI-powered next word prediction</p>
+    </div>
+
+    <div class="predictions">
+      <button class="pred-btn left" onclick="appendWord(0)">
+        <span class="pred-label">suggestion</span>
+        <span class="pred-word" id="pred-0">—</span>
+      </button>
+      <button class="pred-btn best" onclick="appendWord(1)">
+        <span class="pred-label">best match</span>
+        <span class="pred-word" id="pred-1">—</span>
+      </button>
+      <button class="pred-btn right" onclick="appendWord(2)">
+        <span class="pred-label">suggestion</span>
+        <span class="pred-word" id="pred-2">—</span>
+      </button>
+    </div>
+
+    <div class="typing-area">
+      <textarea
+        id="input"
+        placeholder="Start typing here…"
+        autofocus
+        spellcheck="false"
+      ></textarea>
+    </div>
+
+    <div class="status-bar">
+      <div class="status-indicator">
+        <div class="dot" id="dot"></div>
+        <span id="status-text">ready</span>
+      </div>
+      <span class="word-count" id="word-count">0 words</span>
+      <button class="clear-btn" onclick="clearAll()">clear</button>
+    </div>
+
+    <p class="hint">click any prediction to append it · tab for best match</p>
+
+  </div>
+
+  <script>
+    const textarea = document.getElementById('input');
+    const dot = document.getElementById('dot');
+    const statusText = document.getElementById('status-text');
+    const wordCount = document.getElementById('word-count');
+
+    let debounceTimer = null;
+    let currentPredictions = ['—', '—', '—'];
+
+    // Debounced prediction on input
+    textarea.addEventListener('input', () => {
+      const text = textarea.value;
+      const words = text.trim().split(/\s+/).filter(Boolean);
+      wordCount.textContent = `${words.length} word${words.length !== 1 ? 's' : ''}`;
+
+      clearTimeout(debounceTimer);
+      debounceTimer = setTimeout(() => {
+        if (text.trim().length > 0) fetchPredictions(text);
+        else resetPredictions();
+      }, 250);
+    });
+
+    // Tab key appends best prediction
+    textarea.addEventListener('keydown', (e) => {
+      if (e.key === 'Tab') {
+        e.preventDefault();
+        appendWord(1);
+      }
+    });
+
+    async function fetchPredictions(text) {
+      setLoading(true);
+      try {
+        const res = await fetch('/predict', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ text })
+        });
+        const data = await res.json();
+        currentPredictions = data.predictions;
+        updateUI(data.predictions);
+      } catch (err) {
+        statusText.textContent = 'error';
+      } finally {
+        setLoading(false);
+      }
+    }
+
+    function updateUI(predictions) {
+      // Order: left=0, best=1, right=2
+      const order = [0, 1, 2];
+      order.forEach((predIdx, btnIdx) => {
+        const el = document.getElementById(`pred-${btnIdx}`);
+        const word = predictions[predIdx] || '—';
+        if (el.textContent !== word) {
+          el.textContent = word;
+          el.classList.remove('word-pop');
+          void el.offsetWidth; // reflow
+          el.classList.add('word-pop');
+        }
+      });
+      statusText.textContent = 'predicted';
+    }
+
+    function appendWord(btnIndex) {
+      const word = document.getElementById(`pred-${btnIndex}`).textContent;
+      if (!word || word === '—') return;
+
+      const val = textarea.value;
+      const needsSpace = val.length > 0 && !val.endsWith(' ');
+      textarea.value = val + (needsSpace ? ' ' : '') + word + ' ';
+      textarea.dispatchEvent(new Event('input'));
+      textarea.focus();
+
+      // Move cursor to end
+      textarea.selectionStart = textarea.selectionEnd = textarea.value.length;
+    }
+
+    function resetPredictions() {
+      ['pred-0', 'pred-1', 'pred-2'].forEach(id => {
+        document.getElementById(id).textContent = '—';
+      });
+      statusText.textContent = 'ready';
+      wordCount.textContent = '0 words';
+    }
+
+    function clearAll() {
+      textarea.value = '';
+      resetPredictions();
+      textarea.focus();
+    }
+
+    function setLoading(isLoading) {
+      dot.className = isLoading ? 'dot loading' : 'dot';
+      statusText.textContent = isLoading ? 'thinking…' : 'predicted';
+      document.querySelectorAll('.pred-btn').forEach(btn => {
+        btn.classList.toggle('loading', isLoading);
+      });
+    }
+  </script>
+</body>
+</html>
