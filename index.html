@@ -4,7 +4,7 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
   <title>Context-Keyboard</title>
-  <link rel="icon" type="image/png" href="your-logo.png">
+  <link rel="icon" type="image/png" href="/static/your-logo.png">
   <style>
     body {
       background-color: #000080;
@@ -89,7 +89,7 @@
       }
 
       textarea {
-        font-size: 16px; /* prevents iOS auto-zoom */
+        font-size: 16px;
         height: 140px;
       }
 
@@ -257,7 +257,6 @@
       text-align: left;
     }
 
-    /* OUTER PAGE stuff */
     .page-wrapper {
       max-width: 700px;
       width: 100%;
@@ -286,7 +285,6 @@
       margin: 6px 0;
     }
 
-    /* Fake spinning star GIF using CSS */
     .spinner {
       width: 32px;
       height: 32px;
@@ -358,12 +356,11 @@
 <body>
   <div class="page-wrapper">
 
-    <!-- Main Window -->
     <table class="main-table" cellpadding="0" cellspacing="0">
       <tr>
         <td>
           <div class="title-bar">
-            <span><img src="your-logo.png" style="width:14px; height:14px; vertical-align:middle; margin-right:4px;"> Context Aware Keyboard AI Keyboard v1.1 BETA</span>
+            <span><img src="/static/your-logo.png" style="width:14px; height:14px; vertical-align:middle; margin-right:4px;"> Context Aware Keyboard AI Keyboard v1.1 BETA</span>
             <div class="title-bar-buttons">
               <span>_</span>
               <span>□</span>
@@ -372,7 +369,6 @@
           </div>
           <div class="window-content">
 
-            <!-- Predictions -->
             <table class="pred-table">
               <tr>
                 <td>
@@ -396,7 +392,6 @@
               </tr>
             </table>
 
-            <!-- Textarea -->
             <div class="textbox-label">Type your text below:</div>
             <textarea
               id="input"
@@ -405,7 +400,6 @@
               spellcheck="false"
             ></textarea>
 
-            <!-- Status bar -->
             <div class="statusbar">
               <span class="statusbar-panel">
                 <span id="dot-emoji" style="font-size:10px;">🟢</span>
@@ -413,21 +407,16 @@
               </span>
               <span class="statusbar-panel" id="word-count">0 words</span>
               <button class="clear-btn" onclick="clearAll()">Clear</button>
-              
             </div>
             <div class="hint-text">
-            <b>TIP:</b> Click any button above to add that word! Press TAB for best match.
+              <b>TIP:</b> Click any button above to add that word! Press TAB for best match.
               It uses last 5 words of sentence to generate context and pad if sentence is shorter than 5 words.
             </div>
-
-
 
           </div>
         </td>
       </tr>
     </table>
-
-
 
   </div>
 
@@ -439,7 +428,7 @@
 
     let debounceTimer = null;
 
-textarea.addEventListener('input', () => {
+    textarea.addEventListener('input', () => {
       const text = textarea.value;
       const words = text.trim().split(/\s+/).filter(Boolean);
       wordCount.textContent = `${words.length} word${words.length !== 1 ? 's' : ''}`;
